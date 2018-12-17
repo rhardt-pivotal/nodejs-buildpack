@@ -17,7 +17,7 @@ var _ = Describe("V3 Wrapped CF NodeJS Buildpack", func() {
 	var app *cutlass.App
 	AfterEach(func() {
 		if app != nil {
-			app.Destroy()
+			// app.Destroy()
 		}
 		app = nil
 	})
@@ -32,7 +32,8 @@ var _ = Describe("V3 Wrapped CF NodeJS Buildpack", func() {
 				Expect(app.Push()).To(Succeed())
 				Eventually(func() ([]string, error) { return app.InstanceStates() }, 120*time.Second).Should(Equal([]string{"RUNNING"}))
 
-				Eventually(app.Stdout.String).Should(MatchRegexp(`.*NodeJS.*8\.\d+\.\d+.*:.*Contributing.* to launch`))
+				Eventually(app.Stdout.String).Should(MatchRegexp(`.*NodeJS.*8\.\d+\.\d+.*:.*Contributing.*`))
+				Eventually(app.Stdout.String).Should(MatchRegexp("Installing node_modules"))
 				Expect(app.GetBody("/")).To(ContainSubstring("Hello World!"))
 			})
 		})
@@ -72,9 +73,32 @@ var _ = Describe("V3 Wrapped CF NodeJS Buildpack", func() {
 				Expect(app.Push()).To(Succeed())
 				Eventually(func() ([]string, error) { return app.InstanceStates() }, 120*time.Second).Should(Equal([]string{"RUNNING"}))
 
-				Eventually(app.Stdout.String).Should(MatchRegexp(`.*NodeJS.*8\.\d+\.\d+.*:.*Contributing.* to launch`))
+				Eventually(app.Stdout.String).Should(MatchRegexp(`.*NodeJS.*8\.\d+\.\d+.*:.*Contributing.*`))
 				Expect(app.GetBody("/")).To(ContainSubstring("Hello World!"))
 			})
+		})
+	})
+
+	Context("using multi-buildpack with v2 buildpack as supply and v3 buildpack as final", func() {
+		BeforeEach(func() {
+			if ok, err := cutlass.ApiGreaterThan("2.65.1"); err != nil || !ok {
+				Skip("API version does not have multi-buildpack support")
+			}
+
+			app = cutlass.New(filepath.Join(bpDir, "fixtures", "fake_supply_nodejs_app"))
+			app.Disk = "2G"
+			app.Memory = "2G"
+			app.Buildpacks = []string{
+				"https://github.com/cloudfoundry/dotnet-core-buildpack#master",
+				"nodejs_buildpack",
+			}
+		})
+
+		FIt("installs the supplied dependency and launches successfully", func() {
+			Expect(app.Push()).To(Succeed())
+
+			Expect(app.Stdout.String()).To(ContainSubstring("Supplying Dotnet Core"))
+			Expect(app.GetBody("/")).To(MatchRegexp(`dotnet: \d+\.\d+\.\d+`))
 		})
 	})
 })

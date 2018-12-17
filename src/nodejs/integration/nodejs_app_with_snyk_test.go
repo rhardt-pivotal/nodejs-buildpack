@@ -15,7 +15,7 @@ var _ = Describe("CF NodeJS Buildpack", func() {
 	var (
 		app, serviceBrokerApp *cutlass.App
 		serviceBrokerURL      string
-		serviceOffering = "snyk" + cutlass.RandStringRunes(10)
+		serviceOffering       = "snyk" + cutlass.RandStringRunes(10)
 	)
 
 	AfterEach(func() {

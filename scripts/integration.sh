@@ -6,13 +6,13 @@ source .envrc
 ./scripts/install_tools.sh
 
 GINKGO_NODES=${GINKGO_NODES:-3}
-GINKGO_ATTEMPTS=${GINKGO_ATTEMPTS:-2}
+GINKGO_ATTEMPTS=${GINKGO_ATTEMPTS:-1}
 export CF_STACK=${CF_STACK:-cflinuxfs3}
 
 pushd src/*/v3_integration
 
     echo "Run Uncached Shim Buildpack"
-    ginkgo -r --flakeAttempts=$GINKGO_ATTEMPTS -nodes $GINKGO_NODES --slowSpecThreshold=60 -- --cached=false
+    ginkgo -r -v --flakeAttempts=$GINKGO_ATTEMPTS -nodes $GINKGO_NODES --slowSpecThreshold=60 -- --cached=false
 
 popd
 
