@@ -47,7 +47,7 @@ func (n *NPM) Rebuild(buildDir string) error {
 	}
 
 	n.Log.Info("Installing any new modules (%s)", source)
-	npmArgs := []string{"install", "--verbose", ""--unsafe-perm", "--userconfig", filepath.Join(buildDir, ".npmrc")}
+	npmArgs := []string{"install", "--verbose", "--unsafe-perm", "--userconfig", filepath.Join(buildDir, ".npmrc")}
 	return n.Command.Execute(buildDir, n.Log.Output(), n.Log.Output(), "npm", npmArgs...)
 }
 
